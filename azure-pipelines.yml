@@ -30,4 +30,3 @@ steps:
     pip install pytest-cov
     pytest --cov=. --cov-report=html
   displayName: 'pytest'
-
