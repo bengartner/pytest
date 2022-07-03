@@ -28,5 +28,11 @@ steps:
 - script: |
     pip install pytest pytest-azurepipelines
     pip install pytest-cov
-    pytest --cov=. --cov-report=html
+    tox -e '$(tox_env)'-coverage
   displayName: 'pytest'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '**/test-results.xml'
+    testRunTitle: 'Python $(python.version)'
+  condition: succeededOrFailed()
