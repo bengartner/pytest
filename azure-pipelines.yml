@@ -10,9 +10,10 @@ pool:
   vmImage: ubuntu-latest
 strategy:
   matrix:
-    Python310:
+    ubuntu-py310:
       python.version: '3.10'
-
+      os: ubuntu-latest
+      tox_env: "py310-xdist"
 steps:
 - task: UsePythonVersion@0
   inputs:
@@ -21,10 +22,10 @@ steps:
 
 - script: |
     python -m pip install --upgrade pip
-    pip install -r requirements.txt
+    pip install tox coverage
   displayName: 'Install dependencies'
 
 - script: |
     pip install pytest pytest-azurepipelines
-    pytest
+    tox -e ${{ matrix.tox_env }}-coverage
   displayName: 'pytest'
