@@ -27,5 +27,5 @@ steps:
 
 - script: |
     pip install pytest pytest-azurepipelines
-    tox -e ${{ strategy.matrix.tox_env }}-coverage
+    tox -e '$(tox_env)'-coverage
   displayName: 'pytest'
