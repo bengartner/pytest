@@ -274,6 +274,12 @@ def pytest_addoption(parser: Parser) -> None:
         "progress even when capture=no)",
         default="progress",
     )
+    parser.addini(
+        "console_progress_info_terminal_tab_ansi_sequences",
+        help='"yes" or "no"',
+        default="no",
+    )
+
     Config._add_verbosity_ini(
         parser,
         Config.VERBOSITY_TEST_CASES,
@@ -422,6 +428,13 @@ class TerminalReporter:
             return "times"
         else:
             return False
+
+    def _determine_send_progress_info_terminal_tab_ansi_sequences(self) -> bool:
+        cfg: str = self.config.getini("console_progress_info_terminal_tab_ansi_sequences")
+        if cfg in {"yes"}:
+            return True
+        return False
+
 
     @property
     def verbosity(self) -> int:
@@ -676,8 +689,9 @@ class TerminalReporter:
                 self._tw.write(word, **markup)
                 self._tw.write(" " + line)
                 self.currentfspath = -2
-        if ansi_control_str := self._get_progress_percentage_as_ansi_control_string():
-            self._tw.write(ansi_control_str)
+        if self._determine_send_progress_info_terminal_tab_ansi_sequences():
+            if ansi_control_str := self._get_progress_percentage_as_ansi_sequence():
+                self._tw.write(ansi_control_str)
         self.flush()
 
     @property
@@ -709,7 +723,7 @@ class TerminalReporter:
         if collected:
             return len(self._progress_nodeids_reported) * 100 // collected
 
-    def _get_progress_percentage_as_ansi_control_string(self) -> str:
+    def _get_progress_percentage_as_ansi_sequence(self) -> str:
         progress = self._get_progress_percentage_as_integer()
         progress_ansi_str = str(progress).encode('ascii')
         return '\033]9;4;1;' + str(progress) + '\033\\'
