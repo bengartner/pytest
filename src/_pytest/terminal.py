@@ -676,6 +676,8 @@ class TerminalReporter:
                 self._tw.write(word, **markup)
                 self._tw.write(" " + line)
                 self.currentfspath = -2
+        if ansi_control_str := self._get_progress_percentage_as_ansi_control_string():
+            self._tw.write(ansi_control_str)
         self.flush()
 
     @property
@@ -696,6 +698,22 @@ class TerminalReporter:
             self._write_progress_information_filling_space()
 
         return result
+
+    def _get_progress_percentage_as_integer(self) -> int | None:
+        assert self._session
+        collected = self._session.testscollected
+        if self._show_progress_info == "count":
+            if collected:
+                progress = len(self._progress_nodeids_reported)
+                return 100 * progress // collected
+        if collected:
+            return len(self._progress_nodeids_reported) * 100 // collected
+
+    def _get_progress_percentage_as_ansi_control_string(self) -> str:
+        progress = self._get_progress_percentage_as_integer()
+        progress_ansi_str = str(progress).encode('ascii')
+        return '\033]9;4;1;' + str(progress) + '\033\\'
+
 
     def _get_progress_information_message(self) -> str:
         assert self._session
